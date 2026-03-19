@@ -1,10 +1,15 @@
 import Stripe from "stripe";
 
-// ✅ SECURE: API key loaded from environment variable, never hardcoded
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// ✅ Lazy init — runs at request time only, not during build
+function getStripe() {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("Missing STRIPE_SECRET_KEY environment variable.");
+  return new Stripe(key);
+}
 
 export async function POST(req) {
   try {
+    const stripe = getStripe();
     const body = await req.json();
     const amount = body.amount;
 
